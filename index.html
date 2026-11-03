@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Gesture Meme Tracker - Pro Side-by-Side Edition</title>
+    
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;700&family=Plus+Jakarta+Sans:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- MediaPipe Machine Learning Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+    <style>
+        /* ==========================================================================
+           1. PROFESSIONAL CSS DESIGN SYSTEM & VARIABLES
+           ========================================================================== */
+        :root {
+            --bg-base: #07080c;
+            --bg-card: rgba(16, 18, 27, 0.85);
+            --border-glow: rgba(99, 102, 241, 0.35);
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --accent-primary: #6366f1;
+            --accent-secondary: #ec4899;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --radius-xl: 24px;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --shadow-elevation: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+            --transition-smooth: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* ==========================================================================
+           2. GLOBAL RESET & BASE STYLING
+           ========================================================================== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(99, 102, 241, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.12) 0%, transparent 45%);
+        }
+
+        /* ==========================================================================
+           3. HEADER COMPONENT
+           ========================================================================== */
+        header {
+            padding: 1rem 2.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-subtle);
+            background: rgba(7, 8, 12, 0.8);
+            backdrop-filter: blur(20px);
+            z-index: 100;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 1.2rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand i {
+            color: var(--accent-primary);
+            -webkit-text-fill-color: initial;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 30px;
+            font-size: 0.8rem;
+            font-family: 'Fira Code', monospace;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background-color: #ef4444;
+            box-shadow: 0 0 8px #ef4444;
+            transition: var(--transition-smooth);
+        }
+
+        .status-dot.active {
+            background-color: var(--accent-green);
+            box-shadow: 0 0 10px var(--accent-green);
+        }
+
+        /* ==========================================================================
+           4. MAIN SIDE-BY-SIDE GRID LAYOUT (Зэрэгцүүлсэн 2 дэлгэц)
+           ========================================================================== */
+        main {
+            flex: 1;
+            padding: 1.5rem 2.5rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr; /* Яг зэрэгцүүлсэн 2 багана */
+            gap: 2rem;
+            max-width: 1800px;
+            margin: 0 auto;
+            width: 100%;
+            height: calc(100vh - 70px);
+        }
+
+        .workspace-panel {
+            background: var(--bg-card);
+            border: 1px solid var(--border-glow);
+            border-radius: var(--radius-xl);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            box-shadow: var(--shadow-elevation);
+            backdrop-filter: blur(15px);
+            height: 100%;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .panel-title i {
+            color: var(--accent-cyan);
+        }
+
+        .telemetry-pill {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+            background: rgba(6, 182, 212, 0.1);
+            padding: 4px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(6, 182, 212, 0.2);
+        }
+
+        /* ==========================================================================
+           5. VIEWPORT CONTAINERS (Camera & Meme Screen)
+           ========================================================================== */
+        .viewport-container {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            background: #000;
+            border: 1px solid var(--border-subtle);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #webcam, #output_canvas {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Камерын тусгал */
+        }
+
+        .meme-screen {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: #050608;
+            transition: var(--transition-smooth);
+            animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* HUD Floating Badge */
+        .hud-badge {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(10, 11, 16, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .hud-icon {
+            font-size: 1.3rem;
+            color: var(--accent-cyan);
+        }
+
+        .hud-text h5 {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            font-family: 'Fira Code', monospace;
+            letter-spacing: 0.5px;
+        }
+
+        .hud-text p {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            main {
+                grid-template-columns: 1fr;
+                height: auto;
+                overflow-y: auto;
+            }
+            .workspace-panel {
+                height: 450px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="brand">
+            <i class="fa-solid fa-wand-magic-sparkles"></i>
+            <span>AI Gesture Hamster Engine</span>
+        </div>
+        <div class="status-badge">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">CONNECTING...</span>
+        </div>
+    </header>
+
+    <!-- Main Side-by-Side Workspace -->
+    <main>
+        <!-- Left Panel: Live Camera & Hand Skeleton Tracking -->
+        <div class="workspace-panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fa-solid fa-video"></i> Live Vision Tracking
+                </div>
+                <div class="telemetry-pill" id="fpsDisplay">FPS: 0</div>
+            </div>
+
+            <div class="viewport-container">
+                <video id="webcam" autoplay playsinline muted></video>
+                <canvas id="output_canvas"></canvas>
+
+                <div class="hud-badge">
+                    <div class="hud-icon">
+                        <i class="fa-solid fa-hand" id="hudGestureIcon"></i>
+                    </div>
+                    <div class="hud-text">
+                        <h5>Detected Motion</h5>
+                        <p id="hudGestureName">Waiting for hand...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Panel: Reactive Hamster Meme Display -->
+        <div class="workspace-panel">
+            <div class="panel-header">
+                <div class="panel-title">
+                    <i class="fa-solid fa-face-laugh-squint"></i> Reactive Meme Canvas
+                </div>
+                <div class="telemetry-pill" style="color: var(--accent-secondary); border-color: rgba(236,72,153,0.2); background: rgba(236,72,153,0.1);">
+                    Auto-Sync Active
+                </div>
+            </div>
+
+            <div class="viewport-container">
+                <img id="memeDisplay" class="meme-screen" src="https://i.postimg.cc/fJDD0jgB/IMG-0714.jpg" alt="Hamster Meme Target">
+            </div>
+        </div>
+    </main>
+
+    <!-- Core JavaScript Neural Engine -->
+    <script>
+        'use strict';
+
+        const videoElement = document.getElementById('webcam');
+        const canvasElement = document.getElementById('output_canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+        const memeDisplay = document.getElementById('memeDisplay');
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        const hudGestureName = document.getElementById('hudGestureName');
+        const hudGestureIcon = document.getElementById('hudGestureIcon');
+        const fpsDisplay = document.getElementById('fpsDisplay');
+
+        let lastFrameTime = performance.now();
+        let frameCount = 0;
+        let activeGestureKey = '';
+
+        // Complete Hamster Asset Map based on precise user direct links
+        const HAMSTER_ASSETS = {
+            'THUMBS_UP': [
+                { url: 'https://i.postimg.cc/Z0m1fYFK/157FB6DA-F91C-4632-B7F7-85F37DA3E70E.jpg', label: 'Thumbs Up Hamster', icon: 'fa-thumbs-up' },
+                { url: 'https://i.postimg.cc/HjmfSW4T/0D208553-3EDE-4298-BEE5-CAD2E791865F.jpg', label: 'Thumbs Up Hamster 2', icon: 'fa-thumbs-up' }
+            ],
+            'PEACE': [
+                { url: 'https://i.postimg.cc/hhnHC4bB/5BD9A1C2-A28B-4180-BE36-7E88C3BBC8A7.jpg', label: 'Candy Lollipop Hamster', icon: 'fa-hand-peace' },
+                { url: 'https://i.postimg.cc/Sj4wZQ7x/58711A46-2F31-4BF2-AC2A-1389C0031EA7.jpg', label: 'Happy Candy Hamster', icon: 'fa-hand-peace' }
+            ],
+            'FIST': [
+                { url: 'https://i.postimg.cc/w3zSWxcq/920C209C-BC7B-4FF5-BF41-E7687A86ACAD.jpg', label: 'Glasses Guy Hamster', icon: 'fa-glasses' },
+                { url: 'https://i.postimg.cc/3WhPLrCr/F96E474C-61DB-4132-88BD-A2EE06C55EC4.jpg', label: 'Glasses Guy Hamster 2', icon: 'fa-glasses' }
+            ],
+            'OPEN_PALM': [
+                { url: 'https://i.postimg.cc/3dYYDCbg/152EBF78-B74B-45A1-9C06-35C2EE9D27F1.jpg', label: 'Praying Clasp Hamster', icon: 'fa-hands-praying' },
+                { url: 'https://i.postimg.cc/VdmmbBHB/FE75A1D4-F129-43C0-A58C-8955C5AFA209.jpg', label: 'Praying Clasp Hamster 2', icon: 'fa-hands-praying' },
+                { url: 'https://i.postimg.cc/1fssNcYK/IMG-0716.jpg', label: 'Fat Clasp Hamster', icon: 'fa-hands-praying' },
+                { url: 'https://i.postimg.cc/KRxxgrsD/IMG-0717.jpg', label: 'Hamster with Tiny Mouse', icon: 'fa-hands-praying' }
+            ],
+            'DEFAULT': [
+                { url: 'https://i.postimg.cc/fJDD0jgB/IMG-0714.jpg', label: 'Hatted Hamster Prime', icon: 'fa-face-meh' },
+                { url: 'https://i.postimg.cc/MvqqjbrD/IMG-0715.jpg', label: 'Hatted Hamster Secundus', icon: 'fa-face-meh' }
+            ]
+        };
+
+        function switchHamsterMeme(gestureKey) {
+            if (activeGestureKey === gestureKey) return;
+            activeGestureKey = gestureKey;
+
+            const pool = HAMSTER_ASSETS[gestureKey] || HAMSTER_ASSETS['DEFAULT'];
+            const targetAsset = pool[Math.floor(Math.random() * pool.length)];
+
+            const imgLoader = new Image();
+            imgLoader.src = targetAsset.url;
+            imgLoader.onload = () => {
+                memeDisplay.src = targetAsset.url;
+            };
+
+            hudGestureName.innerText = targetAsset.label;
+            hudGestureIcon.className = `fa-solid ${targetAsset.icon}`;
+        }
+
+        // Neural Gesture Recognition Classifier Logic
+        function evaluateHandLandmarks(landmarks) {
+            const thumbTip = landmarks[4];
+            const indexTip = landmarks[8];
+            const middleTip = landmarks[12];
+            const ringTip = landmarks[16];
+            const pinkyTip = landmarks[20];
+
+            const indexPip = landmarks[6];
+            const middlePip = landmarks[10];
+            const ringPip = landmarks[14];
+            const pinkyPip = landmarks[18];
+
+            const isIndexExtended = indexTip.y < indexPip.y;
+            const isMiddleExtended = middleTip.y < middlePip.y;
+            const isRingExtended = ringTip.y < ringPip.y;
+            const isPinkyExtended = pinkyTip.y < pinkyPip.y;
+
+            // 1. Thumbs Up Gesture
+            if (thumbTip.y < indexPip.y && !isIndexExtended && !isMiddleExtended && !isRingExtended && !isPinkyExtended) {
+                return 'THUMBS_UP';
+            }
+            // 2. Peace Sign (V) Gesture
+            if (isIndexExtended && isMiddleExtended && !isRingExtended && !isPinkyExtended) {
+                return 'PEACE';
+            }
+            // 3. Closed Fist Gesture
+            if (!isIndexExtended && !isMiddleExtended && !isRingExtended && !isPinkyExtended) {
+                return 'FIST';
+            }
+            // 4. Open Palm Gesture
+            if (isIndexExtended && isMiddleExtended && isRingExtended && isPinkyExtended) {
+                return 'OPEN_PALM';
+            }
+
+            return 'DEFAULT';
+        }
+
+        // MediaPipe Pipeline Result Processor
+        function processMediaPipeResults(results) {
+            frameCount++;
+            const currentTime = performance.now();
+            if (currentTime - lastFrameTime >= 1000) {
+                fpsDisplay.innerText = `FPS: ${frameCount}`;
+                frameCount = 0;
+                lastFrameTime = currentTime;
+            }
+
+            canvasElement.width = videoElement.videoWidth;
+            canvasElement.height = videoElement.videoHeight;
+
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                for (const handLandmarks of results.multiHandLandmarks) {
+                    drawConnectors(canvasCtx, handLandmarks, HAND_CONNECTIONS, { color: '#06b6d4', lineWidth: 3 });
+                    drawLandmarks(canvasCtx, handLandmarks, { color: '#ec4899', lineWidth: 1, radius: 4 });
+
+                    const recognizedGesture = evaluateHandLandmarks(handLandmarks);
+                    switchHamsterMeme(recognizedGesture);
+                }
+            } else {
+                switchHamsterMeme('DEFAULT');
+            }
+            canvasCtx.restore();
+        }
+
+        // Initialize MediaPipe Hands Instance
+        const handsPipeline = new Hands({
+            locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        });
+
+        handsPipeline.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.75,
+            minTrackingConfidence: 0.75
+        });
+
+        handsPipeline.onResults(processMediaPipeResults);
+
+        // Initialize Camera Stream Engine
+        const cameraFeed = new Camera(videoElement, {
+            onFrame: async () => {
+                await handsPipeline.send({ image: videoElement });
+            },
+            width: 1280,
+            height: 720
+        });
+
+        cameraFeed.start()
+            .then(() => {
+                statusDot.classList.add('active');
+                statusText.innerText = 'SYSTEM LIVE';
+            })
+            .catch(error => {
+                console.error('Camera initialization failed:', error);
+                statusText.innerText = 'CAMERA ERROR';
+            });
+    </script>
+</body>
+</html>
